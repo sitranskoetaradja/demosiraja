@@ -8,9 +8,19 @@ import {
 	BreadcrumbPage,
 	BreadcrumbSeparator,
 } from "@/components/ui/Breadcrumb/breadcrumb"
+import type { PageProps } from '@/@types/common'
+import getFacilityList from '@/server/actions/getFacilityList'
+import FacilityListProvider from './_components/FacilityListProvider'
+import FacilityListTable from './_components/FacilityListTable'
+import FacilityListActionTools from './_components/FacilityListActionTools'
+import FacilityListTableTools from './_components/FacilityListTableTools'
 
-const Page = () => {
+const Page = async ({ searchParams }: PageProps) => {
+	const params = await searchParams
+    const data = await getFacilityList(params)
 	return (
+		<FacilityListProvider facilityList={data.list}>
+
 		<Container>
 
 			<div className="mb-6">
@@ -25,14 +35,14 @@ const Page = () => {
 						</BreadcrumbItem>
 						<BreadcrumbSeparator />
 						<BreadcrumbItem>
-							<BreadcrumbPage>Halte</BreadcrumbPage>
+							<BreadcrumbPage>Fasilitas</BreadcrumbPage>
 						</BreadcrumbItem>
 					</BreadcrumbList>
 				</Breadcrumb>
 			</div>
 			<div className="flex items-center justify-between">
 				<div>
-					<h3 className="mb-1">Halte</h3>
+					<h3 className="mb-1">Fasilitas</h3>
 					<p>
 						Create an image with Generative AI by describing what
 						you&apos;d like to see. Please note, all images are shared
@@ -42,15 +52,24 @@ const Page = () => {
 			</div>
 			<div className="mt-6">
 				<AdaptiveCard>
-					<div className="flex flex-col gap-4">
-						<div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
-							<h3>Setting</h3>
-							{/* <CustomerListActionTools /> */}
-						</div>
-					</div>
-				</AdaptiveCard>
+                    <div className="flex flex-col gap-4">
+                        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
+                            <h4>Total Fasilitas: {data.list.length}</h4>
+                            <FacilityListActionTools />
+                        </div>
+                        <FacilityListTableTools />
+                        <FacilityListTable
+                            facilityListTotal={data.total}
+                            pageIndex={
+                                parseInt(params.pageIndex as string) || 1
+                            }
+                            pageSize={parseInt(params.pageSize as string) || 10}
+                        />
+                    </div>
+                </AdaptiveCard>
 			</div>
 		</Container>
+		</FacilityListProvider>
 
 	)
 }

@@ -8,50 +8,70 @@ import {
 	BreadcrumbPage,
 	BreadcrumbSeparator,
 } from "@/components/ui/Breadcrumb/breadcrumb"
+import HalteListProvider from './_components/HalteListProvider'
+import getHalteList from '@/server/actions/getHalteList'
+import type { PageProps } from '@/@types/common'
+import HalteListTable from './_components/HalteListTable'
+import HalteListActionTools from './_components/HalteListActionTools'
+import HalteListTableTools from './_components/HalteListTableTools'
 
-const Page = () => {
+const Page = async ({ searchParams }: PageProps) => {
+	const params = await searchParams
+	const data = await getHalteList(params)
+
+
+
 	return (
-		<Container>
+		<HalteListProvider halteList={data.list}>
+			<Container>
 
-			<div className="mb-6">
-				<Breadcrumb>
-					<BreadcrumbList>
-						<BreadcrumbItem>
-							<BreadcrumbLink href="/dashboard">Home</BreadcrumbLink>
-						</BreadcrumbItem>
-						<BreadcrumbSeparator />
-						<BreadcrumbItem>
-							<BreadcrumbPage>Inventaris</BreadcrumbPage>
-						</BreadcrumbItem>
-						<BreadcrumbSeparator />
-						<BreadcrumbItem>
-							<BreadcrumbPage>Halte</BreadcrumbPage>
-						</BreadcrumbItem>
-					</BreadcrumbList>
-				</Breadcrumb>
-			</div>
-			<div className="flex items-center justify-between">
-				<div>
-					<h3 className="mb-1">Halte</h3>
-					<p>
-						Create an image with Generative AI by describing what
-						you&apos;d like to see. Please note, all images are shared
-						publicly by default.
-					</p>
+				<div className="mb-6">
+					<Breadcrumb>
+						<BreadcrumbList>
+							<BreadcrumbItem>
+								<BreadcrumbLink href="/dashboard">Home</BreadcrumbLink>
+							</BreadcrumbItem>
+							<BreadcrumbSeparator />
+							<BreadcrumbItem>
+								<BreadcrumbPage>Inventaris</BreadcrumbPage>
+							</BreadcrumbItem>
+							<BreadcrumbSeparator />
+							<BreadcrumbItem>
+								<BreadcrumbPage>Halte</BreadcrumbPage>
+							</BreadcrumbItem>
+						</BreadcrumbList>
+					</Breadcrumb>
 				</div>
-			</div>
-			<div className="mt-6">
-				<AdaptiveCard>
-					<div className="flex flex-col gap-4">
-						<div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
-							<h3>Setting</h3>
-							{/* <CustomerListActionTools /> */}
-						</div>
+				<div className="flex items-center justify-between">
+					<div>
+						<h3 className="mb-1">Halte</h3>
+						<p>
+							Create an image with Generative AI by describing what
+							you&apos;d like to see. Please note, all images are shared
+							publicly by default.
+						</p>
 					</div>
-				</AdaptiveCard>
-			</div>
-		</Container>
-
+				</div>
+				<div className="mt-6">
+					<AdaptiveCard>
+                    <div className="flex flex-col gap-4">
+                        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
+                            <h4>Total Halte: {data.list.length}</h4>
+                            <HalteListActionTools />
+                        </div>
+                        <HalteListTableTools />
+                        <HalteListTable
+                            halteListTotal={data.total}
+                            pageIndex={
+                                parseInt(params.pageIndex as string) || 1
+                            }
+                            pageSize={parseInt(params.pageSize as string) || 10}
+                        />
+                    </div>
+                </AdaptiveCard>
+				</div>
+			</Container>
+		</HalteListProvider>
 	)
 }
 

@@ -26,12 +26,46 @@ export const protectedRoutes: Routes = {
             pageContainerType: 'contained',
         },
     },
+    '/bus/create': {
+        key: 'inventory.bus',
+        authority: [],
+        meta: {
+            pageBackgroundType: 'plain',
+            // pageContainerType: 'contained',
+			
+            header: {
+                title: 'Tambah Bus',
+                description:
+                    'Manage customer details, track purchases, and update preferences easily.',
+                contained: true,
+            },
+            footer: false,
+        
+        },
+    },
     '/halte': {
         key: 'inventory.halte',
         authority: [],
         meta: {
             pageBackgroundType: 'plain',
             pageContainerType: 'contained',
+        },
+    },
+    '/halte/create': {
+        key: 'inventory.halte',
+        authority: [],
+        meta: {
+            pageBackgroundType: 'plain',
+            // pageContainerType: 'contained',
+			
+            header: {
+                title: 'Tambah Halte',
+                description:
+                    'Manage customer details, track purchases, and update preferences easily.',
+                contained: true,
+            },
+            footer: false,
+        
         },
     },
     // '/loan': {
@@ -74,6 +108,23 @@ export const protectedRoutes: Routes = {
             pageContainerType: 'contained',
         },
     },
+    '/category/create': {
+        key: 'master.category',
+        authority: [],
+        meta: {
+            pageBackgroundType: 'plain',
+            // pageContainerType: 'contained',
+			
+            header: {
+                title: 'Tambah Kategori',
+                description:
+                    'Manage customer details, track purchases, and update preferences easily.',
+                contained: true,
+            },
+            footer: false,
+        
+        },
+    },
     '/track': {
         key: 'master.track',
         authority: [],
@@ -82,12 +133,46 @@ export const protectedRoutes: Routes = {
             pageContainerType: 'contained',
         },
     },
+    '/track/create': {
+        key: 'inventory.track',
+        authority: [],
+        meta: {
+            pageBackgroundType: 'plain',
+            // pageContainerType: 'contained',
+			
+            header: {
+                title: 'Tambah Rute Trayek',
+                description:
+                    'Manage customer details, track purchases, and update preferences easily.',
+                contained: true,
+            },
+            footer: false,
+        
+        },
+    },
     '/user': {
         key: 'master.user',
         authority: [],
         meta: {
             pageBackgroundType: 'plain',
             pageContainerType: 'contained',
+        },
+    },
+    '/user/create': {
+        key: 'master.user',
+        authority: [],
+        meta: {
+            pageBackgroundType: 'plain',
+            // pageContainerType: 'contained',
+			
+            header: {
+                title: 'Tambah Pengguna',
+                description:
+                    'Manage customer details, track purchases, and update preferences easily.',
+                contained: true,
+            },
+            footer: false,
+        
         },
     },
     '/documentation': {

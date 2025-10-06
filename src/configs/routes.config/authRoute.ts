@@ -1,8 +1,8 @@
 import type { Routes } from '@/@types/routes'
 
 const dashboardsRoute: Routes = {
-    '/sign-in': {
-        key: 'signIn',
+    '/login': {
+        key: 'login',
         authority: [],
     },
     '/sign-up': {

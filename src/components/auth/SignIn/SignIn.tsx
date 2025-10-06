@@ -50,17 +50,17 @@ const SignIn = ({
             )}
             <SignInForm
                 setMessage={setMessage}
-                passwordHint={
-                    <div className="mb-7 mt-2">
-                        <ActionLink
-                            href={forgetPasswordUrl}
-                            className="font-semibold heading-text mt-2 underline"
-                            themeColor={false}
-                        >
-                            Forgot password
-                        </ActionLink>
-                    </div>
-                }
+                // passwordHint={
+                //     <div className="mb-7 mt-2">
+                //         <ActionLink
+                //             href={forgetPasswordUrl}
+                //             className="font-semibold heading-text mt-2 underline"
+                //             themeColor={false}
+                //         >
+                //             Forgot password
+                //         </ActionLink>
+                //     </div>
+                // }
                 onSignIn={onSignIn}
             />
             {/* <div className="mt-8">

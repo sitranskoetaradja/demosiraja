@@ -8,9 +8,19 @@ import {
 	BreadcrumbPage,
 	BreadcrumbSeparator,
 } from "@/components/ui/Breadcrumb/breadcrumb"
+import BusListTable from './_components/BusListTable'
+import BusListProvider from './_components/BusListProvider'
+import type { PageProps } from '@/@types/common'
+import getBusList from '@/server/actions/getBusList'
+import BusListActionTools from './_components/BusListActionTools'
+import BusListTableTools from './_components/BusListTableTools'
 
-const Page = () => {
+const Page = async ({ searchParams }: PageProps) => {
+	const params = await searchParams
+    const data = await getBusList(params)
 	return (
+		<BusListProvider busList={data.list}>
+
 		<Container>
 
 			<div className="mb-6">
@@ -42,15 +52,24 @@ const Page = () => {
 			</div>
 			<div className="mt-6">
 				<AdaptiveCard>
-					<div className="flex flex-col gap-4">
-						<div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
-							<h3>Setting</h3>
-							{/* <CustomerListActionTools /> */}
-						</div>
-					</div>
-				</AdaptiveCard>
+                    <div className="flex flex-col gap-4">
+                        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
+                            <h4>Total Bus: {data.list.length}</h4>
+                            <BusListActionTools />
+                        </div>
+                        <BusListTableTools />
+                        <BusListTable
+                            busListTotal={data.total}
+                            pageIndex={
+                                parseInt(params.pageIndex as string) || 1
+                            }
+                            pageSize={parseInt(params.pageSize as string) || 10}
+                        />
+                    </div>
+                </AdaptiveCard>
 			</div>
 		</Container>
+		</BusListProvider>
 
 	)
 }
