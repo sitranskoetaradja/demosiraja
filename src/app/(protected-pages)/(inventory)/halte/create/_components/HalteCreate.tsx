@@ -37,15 +37,17 @@ const HalteCreate = () => {
 			const ext = mime.split('/').pop(); // "png"
 			const filePath = `halte/${values.code}-${Date.now()}.${ext}`;
 
-			const { error: uploadError } = await supabase.storage
-				.from('sirajabucket') // your bucket name
-				.upload(filePath, extractFile);
-			if (uploadError) {
-				toast.push(
-					<Notification type="danger">Something wrong, please try again!</Notification>,
-					{ placement: 'top-center' },
-				)
-				router.push('/Halte')
+			if (values.photo) {
+				const { error: uploadError } = await supabase.storage
+					.from('sirajabucket') // your bucket name
+					.upload(filePath, extractFile);
+				if (uploadError) {
+					toast.push(
+						<Notification type="danger">Something wrong, please try again!</Notification>,
+						{ placement: 'top-center' },
+					)
+					router.push('/halte')
+				}
 			}
 			const { data: res } = supabase.storage
 				.from('sirajabucket')

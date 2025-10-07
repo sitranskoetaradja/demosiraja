@@ -8,12 +8,13 @@ import { FormItem } from '@/components/ui/Form'
 import { HiOutlineQuestionMarkCircle } from 'react-icons/hi'
 import { Controller } from 'react-hook-form'
 import CreatableSelect from 'react-select/creatable'
-import type { FormSectionBaseProps } from './types'
+import type { FacilityFormSchema, FormSectionBaseProps } from './types'
 import DatePicker from '@/components/ui/DatePicker'
 import dayjs from 'dayjs'
 // import { Options } from '@/@types/common'
 import { createClient } from '@/utils/supabase/client'
 import { useCallback, useEffect, useState } from 'react'
+import Segment from '@/components/ui/Segment'
 
 
 type GeneralSectionProps = FormSectionBaseProps
@@ -23,23 +24,30 @@ type Options = {
 	value: string
 }[]
 
+type Option = {
+	label: string
+	value: string
+}
+
 const status: Options = [
-    { label: 'Baik', value: 'BAIK' },
-    { label: 'Rusak', value: 'RUSAK' },
-    { label: 'Tidak Ada', value: 'TIDAK_ADA' },
+	{ label: 'Baik', value: 'BAIK' },
+	{ label: 'Rusak', value: 'RUSAK' },
+	{ label: 'Tidak Ada', value: 'TIDAK_ADA' },
 ]
 
 
-const GeneralSection = ({ control, errors }: GeneralSectionProps) => {
+const GeneralSection = ({ control, errors, setLokasi }: GeneralSectionProps) => {
 	const supabase = createClient()
 	const [loading, setLoading] = useState(true)
 	const [categories, setCategories] = useState<Options>([])
 	const [buses, setBuses] = useState<Options>([])
 	const [haltes, setHaltes] = useState<Options>([])
+	const [allBuses, setAllBuses] = useState<Options>([])
+	const [allHaltes, setAllHaltes] = useState<Options>([])
 	const [isDisabledBus, setIsDisabledBus] = useState(false)
 	const [isDisabledBusStop, setIsDisabledBusStop] = useState(false)
-	const [busId, setBusId] = useState<string | null>(null);
-	const [busStopId, setBusStopId] = useState<string | null>(null);
+	const [bus, setBus] = useState<Option | null>(null);
+	const [busStop, setBusStop] = useState<Option | null>(null);
 	// const [error, setError] = useState(null);
 	const fetchData = useCallback(async () => {
 		setLoading(true);
@@ -55,9 +63,13 @@ const GeneralSection = ({ control, errors }: GeneralSectionProps) => {
 				// setError(categoriesRes.error || busesRes.error || halteRes.error);
 				console.error('Error fetching data:', categoriesRes.error || busesRes.error || halteRes.error);
 			} else {
+				const nullOption = { label: '', value: '' };
+				// const newData = [nullOption, ...categoriesRes.data];
 				setCategories(categoriesRes.data);
 				setBuses(busesRes.data);
+				setAllBuses(busesRes.data);
 				setHaltes(halteRes.data);
+				setAllHaltes(halteRes.data);
 			}
 		} catch (err) {
 			console.error('An unexpected error occurred:', err);
@@ -69,7 +81,7 @@ const GeneralSection = ({ control, errors }: GeneralSectionProps) => {
 
 	useEffect(() => {
 		fetchData();
-	}, [fetchData]);
+	}, []);
 	// const getCategories = useCallback(async () => {
 	//     try {
 	//         setLoading(true)
@@ -100,6 +112,7 @@ const GeneralSection = ({ control, errors }: GeneralSectionProps) => {
 	// 			}
 	// 			if (data) {
 	// 				setBuses(data)
+	// 				setAllBuses(data)
 	// 				console.log(data)
 	//         }
 	//     } catch (error) {
@@ -118,7 +131,8 @@ const GeneralSection = ({ control, errors }: GeneralSectionProps) => {
 	// 				console.log(error)
 	// 			}
 	// 			if (data) {
-	// 				setHalte(data)
+	// 				setHaltes(data)
+	// 				setAllHaltes(data)
 	// 				console.log(data)
 	//         }
 	//     } catch (error) {
@@ -129,9 +143,28 @@ const GeneralSection = ({ control, errors }: GeneralSectionProps) => {
 	// }, [supabase])
 	// useEffect(() => {
 	//     getCategories()
-	//     getHalte()
-	// 	getHalte()
-	// }, [getCategories, getHalte, getBuses])
+	//     getBuses()
+	// 	// getHalte()
+	// }, [])
+	const [singleSegmentValue, setSingleSegmentValue] = useState('bus')
+	// const [location, setLocation] = useState('bus')
+	const onSingleSelectionSegmentChange = useCallback(
+		(val: string) => {
+			setSingleSegmentValue(val)
+			setLokasi?.(val)
+			if (val === 'halte') {
+				// getHalte()
+				setHaltes(allHaltes)
+				setBuses([])
+			} else {
+				// getBuses()
+				setBuses(allBuses)
+				setHaltes([])
+			}
+		},
+		[allHaltes, allBuses]
+	)
+
 	return (
 		<Card>
 			<h4 className="mb-6">Basic Information</h4>
@@ -185,67 +218,74 @@ const GeneralSection = ({ control, errors }: GeneralSectionProps) => {
 							placeholder="Kategori Fasilitas"
 							options={categories}
 							value={categories.filter(
-								(category) => category.value === field.value,
-							)}
+								(category) => category.value === field.value)
+							}
 							onChange={(option) => { field.onChange(option?.value) }}
 						/>
 					)}
 				/>
 			</FormItem>
-			<h5>Lokasi Fasilitas</h5>
-			<div className="grid md:grid-cols-2 gap-4">
-				<FormItem
-					label="Bus"
-					invalid={Boolean(errors.busId)}
-					errorMessage={errors.busId?.message}
+			<div className="mb-6">
+				<h6 className="mb-3">Lokasi Fasilitas</h6>
+				<Segment
+					value={singleSegmentValue}
+					onChange={(val) =>
+						onSingleSelectionSegmentChange(val as string)
+					}
 				>
-					<Controller
-						name="busId"
-						control={control}
-						render={({ field }) => (
-							<Select
-								instanceId="busId"
-								placeholder="Rute Trayek"
-								options={buses}
-								value={buses.filter(
-									(bus) => bus.value === busId,
-								)}
-								onChange={(option) => {
-									field.onChange(option?.value)
-									setBusId(option?.value || null);
-									setBusStopId(null);
-								}}
-							/>
-						)}
-					/>
-				</FormItem>
-				<FormItem
-					label="Halte"
-					invalid={Boolean(errors.busStopId)}
-					errorMessage={errors.busStopId?.message}
-				>
-					<Controller
-						name="busStopId"
-						control={control}
-						render={({ field }) => (
-							<Select
-								isDisabled={isDisabledBus}
-								instanceId="busStopId"
-								placeholder="Rute Trayek"
-								options={haltes}
-								value={haltes.filter(
-									(halte) => halte.value === busStopId,
-								)}
-								onChange={(option) => {
-									field.onChange(option?.value)
-									setBusStopId(option?.value || null);
-									setBusId(null);
-								}}
-							/>
-						)}
-					/>
-				</FormItem>
+					<Segment.Item value="bus">Bus</Segment.Item>
+					<Segment.Item value="halte">Halte</Segment.Item>
+				</Segment>
 			</div>
+
+			{
+				singleSegmentValue === 'bus' ?
+					<FormItem
+						label="Kode Bus"
+						invalid={Boolean(errors.busId)}
+						errorMessage={errors.busId?.message}
+					>
+						<Controller
+							name="busId"
+							control={control}
+							render={({ field }) => (
+								<Select
+									instanceId="busId"
+									placeholder="Bus"
+									options={buses}
+									value={buses.filter(
+										(bus) => bus.value === field.value)}
+									onChange={(option) => field.onChange(option?.value)}
+								/>
+							)}
+						/>
+					</FormItem>
+					: <></>
+			}
+			{
+				singleSegmentValue === 'halte' ?
+					<FormItem
+						label="Nama Halte"
+						invalid={Boolean(errors.busStopId)}
+						errorMessage={errors.busStopId?.message}
+					>
+						<Controller
+							name="busStopId"
+							control={control}
+							render={({ field }) => (
+								<Select
+									isDisabled={isDisabledBus}
+									instanceId="busStopId"
+									placeholder="Halte"
+									options={haltes}
+									value={haltes.filter((halte) => halte.value === field.value)}
+									onChange={(option) => field.onChange(option?.value)}
+								/>
+							)}
+						/>
+					</FormItem>
+					: <></>
+			}
 			<FormItem
 				label="Status Fasilitas"
 				invalid={Boolean(errors.status)}
@@ -267,7 +307,7 @@ const GeneralSection = ({ control, errors }: GeneralSectionProps) => {
 					)}
 				/>
 			</FormItem>
-<FormItem
+			<FormItem
 				label="Note"
 				invalid={Boolean(errors.note)}
 				errorMessage={errors.note?.message}

@@ -16,8 +16,11 @@ export type DocumentationFields = {
 }
 
 export type FacilityFormSchema = GeneralFields & DocumentationFields 
+type LokasiType = string
 
 export type FormSectionBaseProps = {
     control: Control<FacilityFormSchema>
     errors: FieldErrors<FacilityFormSchema>
+    lokasi?: LokasiType
+  setLokasi?: React.Dispatch<React.SetStateAction<LokasiType>>
 }

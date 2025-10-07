@@ -37,17 +37,20 @@ const FacilityCreate = () => {
 			const mime = blob.type; // e.g., "image/png"
 			const ext = mime.split('/').pop(); // "png"
 			const filePath = `facility/${values.code}-${Date.now()}.${ext}`;
+			if(values.documentation) {
+				const { error: uploadError } = await supabase.storage
+					.from('sirajabucket') // your bucket name
+					.upload(filePath, extractFile);
+				if (uploadError) {
+					toast.push(
+						<Notification type="danger">Something wrong, please try again!</Notification>,
+						{ placement: 'top-center' },
+					)
+					router.push('/facility')
+				}
 
-			const { error: uploadError } = await supabase.storage
-				.from('sirajabucket') // your bucket name
-				.upload(filePath, extractFile);
-			if (uploadError) {
-				toast.push(
-					<Notification type="danger">Something wrong, please try again!</Notification>,
-					{ placement: 'top-center' },
-				)
-				router.push('/facility')
 			}
+
 			const { data: res } = supabase.storage
 				.from('sirajabucket')
 				.getPublicUrl(filePath);
@@ -58,7 +61,7 @@ const FacilityCreate = () => {
 
 			// dayjs.unix(values.value as number).toDate()
 			const { error } = await supabase
-				.from('bus_stops')
+				.from('facilities')
 				.insert({
 					category_id: values.categoryId,
 					bus_id: values.busId,
@@ -67,7 +70,7 @@ const FacilityCreate = () => {
 					name: values.name,
 					status: values.status,
 					note: values.note,
-					docmentation: res.publicUrl,
+					documentation: values.documentation ? res.publicUrl : '',
 					created_by: user.id,
 				})
 			setIsSubmiting(false)

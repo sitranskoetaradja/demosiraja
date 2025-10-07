@@ -30,7 +30,7 @@ const SignInClient = () => {
                 setSubmitting(false)
             } else {
                 // 🚀 Redirect client-side supaya langsung ke dashboard
-                router.push(appConfig.authenticatedEntryPath)
+                router.push(callbackUrl || appConfig.authenticatedEntryPath)
             }
         })
     }

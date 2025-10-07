@@ -36,16 +36,18 @@ const BusCreate = () => {
 			const mime = blob.type; // e.g., "image/png"
 			const ext = mime.split('/').pop(); // "png"
 			const filePath = `bus/${values.code}-${Date.now()}.${ext}`;
-
-			const { error: uploadError } = await supabase.storage
-				.from('sirajabucket') // your bucket name
-				.upload(filePath, extractFile);
-			if (uploadError) {
-				toast.push(
-					<Notification type="danger">Something wrong, please try again!</Notification>,
-					{ placement: 'top-center' },
-				)
-				router.push('/bus')
+			
+			if (values.photo) {
+				const { error: uploadError } = await supabase.storage
+					.from('sirajabucket') // your bucket name
+					.upload(filePath, extractFile);
+				if (uploadError) {
+					toast.push(
+						<Notification type="danger">Something wrong, please try again!</Notification>,
+						{ placement: 'top-center' },
+					)
+					router.push('/bus')
+				}
 			}
 			const { data: res } = supabase.storage
 				.from('sirajabucket')
@@ -54,7 +56,7 @@ const BusCreate = () => {
 			//   const fileExt = file.name.split('.').pop()
 			//   const filePath = `${uid}-${Math.random()}.${fileExt}`
 			//   const { error: uploadError } = await supabase.storage.from('avatars').upload(filePath, file)
-	
+
 			// dayjs.unix(values.value as number).toDate()
 			const { error } = await supabase
 				.from('buses')

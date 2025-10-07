@@ -26,7 +26,7 @@ const FacilityListActionTools = () => {
             <Button
                 variant="solid"
                 icon={<TbPlus className="text-xl" />}
-                // onClick={() => router.push('/facility/create')}
+                onClick={() => router.push('/facility/create')}
             >
                 Tambah Fasilitas
             </Button>
