@@ -8,83 +8,100 @@ import ConfirmDialog from '@/components/shared/ConfirmDialog'
 import sleep from '@/utils/sleep'
 import { TbTrash } from 'react-icons/tb'
 import { useRouter } from 'next/navigation'
-import type { HalteFormSchema } from '@/components/view/HalteForm'
-import HalteForm from '@/components/view/HalteForm'
+import type { UserFormSchema } from '@/components/view/UserForm'
+import UserForm from '@/components/view/UserForm'
 import { createClient } from '@/utils/supabase/client'
 import toTitleCase from '@/utils/toTitleCase'
 import dayjs from 'dayjs'
+import { createAdminUser } from '@/server/actions/addUser'
 
-const HalteCreate = () => {
+const UserCreate = () => {
 	const router = useRouter()
 	const supabase = createClient()
 	const [discardConfirmationOpen, setDiscardConfirmationOpen] =
 		useState(false)
 	const [isSubmiting, setIsSubmiting] = useState(false)
 
-	const handleFormSubmit = async (values: HalteFormSchema) => {
+	const handleFormSubmit = async (values: UserFormSchema) => {
 		console.log('Submitted values', values)
 		// const categoryName = toTitleCase(values.code)
 		setIsSubmiting(true)
 		const {
 			data: { user },
 		} = await supabase.auth.getUser();
+		
+		
 		if (user) {
 			await sleep(800)
-			const response = await fetch(values.photo);
-			const blob = await response.blob();
-			const extractFile = new File([blob], `${user.id}-${Date.now()}`, { type: blob.type })
-			const mime = blob.type; // e.g., "image/png"
-			const ext = mime.split('/').pop(); // "png"
-			const filePath = `halte/${values.code}-${Date.now()}.${ext}`;
+			const {success, data} = await createAdminUser(values.email, values.password)
+			
+			if (success) {
 
-			if (values.photo) {
-				const { error: uploadError } = await supabase.storage
-					.from('sirajabucket') // your bucket name
-					.upload(filePath, extractFile);
-				if (uploadError) {
+				const response = await fetch(values.avatar);
+				const blob = await response.blob();
+				const extractFile = new File([blob], `${user.id}-${Date.now()}`, { type: blob.type })
+				const mime = blob.type; // e.g., "image/png"
+				const ext = mime.split('/').pop(); // "png"
+				const filePath = `avatar/${values.nip}-${Date.now()}.${ext}`;
+
+				if (values.avatar) {
+					const { error: uploadError } = await supabase.storage
+						.from('sirajabucket') // your bucket name
+						.upload(filePath, extractFile);
+					if (uploadError) {
+						toast.push(
+							<Notification type="danger">Something wrong, please try again!</Notification>,
+							{ placement: 'top-center' },
+						)
+						router.push('/user')
+					}
+				}
+				const { data: res } = supabase.storage
+					.from('sirajabucket')
+					.getPublicUrl(filePath);
+				// const file = event.target.files[0]
+				//   const fileExt = file.name.split('.').pop()
+				//   const filePath = `${uid}-${Math.random()}.${fileExt}`
+				//   const { error: uploadError } = await supabase.storage.from('avatars').upload(filePath, file)
+
+				// dayjs.unix(values.value as number).toDate()
+
+				const { error } = await supabase
+					.from('profiles')
+					.insert({
+						id: data?.user?.id,
+						nip: values.nip,
+						name: values.name,
+						position: values.position,
+						rank: values.rank,
+						role: values.role,
+						email: data?.user?.email,
+						phone: values.phone,
+						avatar: values.avatar ? res.publicUrl : '',
+						created_by: user.id,
+					})
+				setIsSubmiting(false)
+				if (error) {
+
 					toast.push(
 						<Notification type="danger">Something wrong, please try again!</Notification>,
 						{ placement: 'top-center' },
 					)
-					router.push('/halte')
+				} else {
+
+					toast.push(
+						<Notification type="success">User berhasil ditambah!</Notification>,
+						{ placement: 'top-center' },
+					)
 				}
-			}
-			const { data: res } = supabase.storage
-				.from('sirajabucket')
-				.getPublicUrl(filePath);
-			// const file = event.target.files[0]
-			//   const fileExt = file.name.split('.').pop()
-			//   const filePath = `${uid}-${Math.random()}.${fileExt}`
-			//   const { error: uploadError } = await supabase.storage.from('avatars').upload(filePath, file)
-
-			// dayjs.unix(values.value as number).toDate()
-			const { error } = await supabase
-				.from('bus_stops')
-				.insert({
-					category_id: values.categoryId,
-					code: values.code,
-					name: values.name,
-					track_id: values.trackId,
-					latitude: values.latitude,
-					longitude: values.longitude,
-					photo: values.photo ? res.publicUrl : '',
-					created_by: user.id,
-				})
-			setIsSubmiting(false)
-			if (error) {
-
+				router.push('/user')
+			} else {
 				toast.push(
 					<Notification type="danger">Something wrong, please try again!</Notification>,
 					{ placement: 'top-center' },
 				)
-			} else {
-
-				toast.push(
-					<Notification type="success">Halte berhasil ditambah!</Notification>,
-					{ placement: 'top-center' },
-				)
+				router.push('/user')
 			}
-			router.push('/halte')
 
 		} else {
 			router.push('/login')
@@ -94,10 +111,10 @@ const HalteCreate = () => {
 	const handleConfirmDiscard = () => {
 		setDiscardConfirmationOpen(true)
 		toast.push(
-			<Notification type="success">Halte discard!</Notification>,
+			<Notification type="success">User discard!</Notification>,
 			{ placement: 'top-center' },
 		)
-		router.push('/Halte')
+		router.push('/user')
 	}
 
 	const handleDiscard = () => {
@@ -109,15 +126,17 @@ const HalteCreate = () => {
 	}
 	return (
 		<>
-			<HalteForm
+			<UserForm
 				defaultValues={{
-					code: '',
-					categoryId: '',
+					nip: '',
 					name: '',
-					trackId: '',
-					latitude: 0,
-					longitude: 0,
-					photo: '',
+					position: '',
+					rank: '',
+					role: '',
+					email: '',
+					phone: '',
+					avatar: '',
+					password: '',
 				}}
 				onFormSubmit={handleFormSubmit}
 			>
@@ -146,7 +165,7 @@ const HalteCreate = () => {
 						</div>
 					</div>
 				</Container>
-			</HalteForm>
+			</UserForm>
 			<ConfirmDialog
 				isOpen={discardConfirmationOpen}
 				type="danger"
@@ -165,4 +184,4 @@ const HalteCreate = () => {
 	)
 }
 
-export default HalteCreate
+export default UserCreate

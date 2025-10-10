@@ -45,6 +45,8 @@ export async function updateSession(request: NextRequest) {
 	const {
 		data: { user },
 	} = await supabase.auth.getUser()
+	
+		console.log('user', user)
 
 	const path = request.nextUrl.pathname
 	const isSignedIn = !!user
@@ -73,7 +75,7 @@ export async function updateSession(request: NextRequest) {
 		url.pathname = appConfig.unAuthenticatedEntryPath
 		if (request.nextUrl.search != '' || callbackUrl != '/') {
 			callbackUrl += request.nextUrl.search
-			// url.searchParams.set(REDIRECT_URL_KEY, callbackUrl)
+			url.searchParams.set(REDIRECT_URL_KEY, callbackUrl)
 		}
 		return NextResponse.redirect(url)
 	}

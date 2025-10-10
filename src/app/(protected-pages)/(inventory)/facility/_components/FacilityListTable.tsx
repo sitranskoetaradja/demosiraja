@@ -23,24 +23,24 @@ type FacilityListTableProps = {
 }
 
 const FacilityStatusColor: Record<
-    number,
+    string,
     {
         label: string
         bgClass: string
         textClass: string
     }
 > = {
-    0: {
-        label: 'Paid',
+    'BAIK': {
+        label: 'Baik',
         bgClass: 'bg-success-subtle',
         textClass: 'text-success',
     },
-    1: {
-        label: 'Pending',
+    'RUSAK': {
+        label: 'Rusak',
         bgClass: 'bg-warning-subtle',
         textClass: 'text-warning',
     },
-    2: { label: 'Failed', bgClass: 'bg-error-subtle', textClass: 'text-error' },
+    'TIDAK_ADA': { label: 'Tidak Ada', bgClass: 'bg-error-subtle', textClass: 'text-error' },
 }
 
 const OrderColumn = ({ row }: { row: Facility }) => {
@@ -202,7 +202,13 @@ const supabase = createClient()
                 accessorKey: 'status',
                 cell: (props) => {
                     const row = props.row.original
-                    return <span className="font-semibold">{row.status}</span>
+                    return (<Tag className={FacilityStatusColor[row.status].bgClass}>
+                            <span
+                                className={`capitalize font-semibold ${FacilityStatusColor[row.status].textClass}`}
+                            >
+                                {FacilityStatusColor[row.status].label}
+                            </span>
+                        </Tag>)
                 },
             },
 			{
@@ -264,7 +270,7 @@ const supabase = createClient()
         setDeleting(true)
         // await sleep(800)
         const response = await supabase
-        .from('categories')
+        .from('facilities')
         .delete()
         .eq('id', orderToDelete)
         console.log('response', response)

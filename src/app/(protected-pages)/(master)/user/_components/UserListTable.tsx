@@ -1,29 +1,69 @@
 'use client'
 
 import ConfirmDialog from '@/components/shared/ConfirmDialog'
-import type { ColumnDef } from '@/components/shared/DataTable'
+import type { ColumnDef, OnSortParam } from '@/components/shared/DataTable'
 import DataTable from '@/components/shared/DataTable'
 import Tooltip from '@/components/ui/Tooltip'
+import { deleteUser } from '@/server/actions/removeUser'
 import useAppendQueryParams from '@/utils/hooks/useAppendQueryParams'
 import { createClient } from '@/utils/supabase/client'
-import dayjs from 'dayjs'
 import { useRouter } from 'next/navigation'
 import { useMemo, useState } from 'react'
-import { TbEye, TbTrash } from 'react-icons/tb'
-import { useCategoryListStore } from '../_store/categoryListStore'
-import type { Category } from '../types'
+import { TbEye, TbPencil, TbTrash } from 'react-icons/tb'
+import { useUserListStore } from '../_store/userListStore'
+import type { User } from '../types'
 
-type CategoryListTableProps = {
-    categoryListTotal: number
+type UserListTableProps = {
+    userListTotal: number
     pageIndex?: number
     pageSize?: number
 }
 
+const userStatusColor: Record<
+    number,
+    {
+        label: string
+        bgClass: string
+        textClass: string
+    }
+> = {
+    0: {
+        label: 'Paid',
+        bgClass: 'bg-success-subtle',
+        textClass: 'text-success',
+    },
+    1: {
+        label: 'Pending',
+        bgClass: 'bg-warning-subtle',
+        textClass: 'text-warning',
+    },
+    2: { label: 'Failed', bgClass: 'bg-error-subtle', textClass: 'text-error' },
+}
+
+const OrderColumn = ({ row }: { row: User }) => {
+    const router = useRouter()
+
+    const onView = () => {
+        // router.push(`/concepts/orders/order-details/${row.id}`)
+    }
+
+    return (
+        <span
+            className="cursor-pointer font-bold heading-text hover:text-primary"
+            onClick={onView}
+        >
+            #{row.id}
+        </span>
+    )
+}
+
 const ActionColumn = ({
     row,
+    onEdit,
     onDelete,
 }: {
-    row: Category
+    row: User
+    onEdit: () => void
     onDelete: () => void
 }) => {
     const router = useRouter()
@@ -33,9 +73,14 @@ const ActionColumn = ({
     }
 
     return (
-        <div className="flex justify-center text-lg gap-1">
+        <div className="flex justify-center text-lg gap-0">
+            <Tooltip wrapperClass="flex" title="Edit">
+                <span className={`cursor-pointer p-2 hover:text-green-500`} onClick={onEdit} >
+                    <TbPencil />
+                </span>
+            </Tooltip>
             <Tooltip wrapperClass="flex" title="View">
-                <span className={`cursor-pointer p-2`} onClick={onView}>
+                <span className={`cursor-pointer p-2 hover:text-blue-500`} onClick={onView}>
                     <TbEye />
                 </span>
             </Tooltip>
@@ -51,26 +96,34 @@ const ActionColumn = ({
     )
 }
 
-const CategoryListTable = ({
-    categoryListTotal,
+const UserListTable = ({
+    userListTotal,
     pageIndex = 1,
     pageSize = 10,
-}: CategoryListTableProps) => {
+}: UserListTableProps) => {
     const router = useRouter()
+    const userList = useUserListStore((state) => state.userList)
+    const setUserList = useUserListStore((state) => state.setUserList)
+    const initialLoading = useUserListStore((state) => state.initialLoading)
     const supabase = createClient()
-    const categoryList = useCategoryListStore((state) => state.categoryList)
-    const initialLoading = useCategoryListStore((state) => state.initialLoading)
-    const { onAppendQueryParams } = useAppendQueryParams()
-    const [deleting, setDeleting] = useState(false)
-    const [deleteConfirmationOpen, setDeleteConfirmationOpen] = useState(false)
-    const [orderToDelete, setOrderToDelete] = useState('')
 
-    const columns: ColumnDef<Category>[] = useMemo(
+    const { onAppendQueryParams } = useAppendQueryParams()
+
+    const [deleting, setDeleting] = useState(false)
+
+    const [deleteConfirmationOpen, setDeleteConfirmationOpen] = useState(false)
+
+    const [orderToDelete, setOrderToDelete] = useState('')
+    const handleEdit = (user: User) => {
+        router.push(`/concepts/customers/customer-edit/${user.id}`)
+    }
+    const columns: ColumnDef<User>[] = useMemo(
         () => [
             {
                 header: 'No',
                 accessorKey: '',
                 cell: ({ row }) => {
+                    // const row = props.row.original
                     return (
                         <span className="font-semibold">
                             {row.index + 1}
@@ -88,23 +141,53 @@ const CategoryListTable = ({
                 },
             },
             {
-                header: 'Tanggal Pembuatan',
-                accessorKey: 'date',
+                header: 'NIP',
+                accessorKey: 'nip',
                 cell: (props) => {
                     const row = props.row.original
-                    return (
-                        <span className="font-semibold">
-                            {row.created_at ? dayjs(row.created_at).format('DD MMM, YYYY') : '-'}
-                        </span>
-                    )
+                    return <span className="font-semibold">{row.nip}</span>
                 },
             },
+            {
+                header: 'Jabatan',
+                accessorKey: 'position',
+                cell: (props) => {
+                    const row = props.row.original
+                    return <span className="font-semibold">{row.position ?? '-'}</span>
+                },
+            },
+            {
+                header: 'Pangkat',
+                accessorKey: 'Rank',
+                cell: (props) => {
+                    const row = props.row.original
+                    return <span className="font-semibold">{row.rank ?? '-'}</span>
+                },
+            },
+            {
+                header: 'Email',
+                accessorKey: 'Email',
+                cell: (props) => {
+                    const row = props.row.original
+                    return <span className="font-semibold">{row.email ?? '-'}</span>
+                },
+            },
+            {
+                header: 'Phone',
+                accessorKey: 'Phone',
+                cell: (props) => {
+                    const row = props.row.original
+                    return <span className="font-semibold">{row.phone ?? '-'}</span>
+                },
+            },
+
             {
                 header: () => <div className="flex justify-center">Action</div>,
                 id: 'action',
                 cell: (props) => (
                     <ActionColumn
                         row={props.row.original}
+                        onEdit={() => handleEdit(props.row.original)}
                         onDelete={() => handleDelete(props.row.original.id)}
                     />
                 ),
@@ -135,38 +218,44 @@ const CategoryListTable = ({
         })
     }
 
+    const handleSort = (sort: OnSortParam) => {
+        onAppendQueryParams({
+            order: sort.order,
+            sortKey: sort.key,
+        })
+    }
+
     const handleDeleteConfirm = async () => {
         setDeleting(true)
-        await supabase
-            .from('categories')
-            .delete()
-            .eq('id', orderToDelete)
+
+        await deleteUser(orderToDelete)
         setDeleting(false)
         setDeleteConfirmationOpen(false)
-        router.push('/category')
+        router.push('/user')
     }
 
     return (
         <>
             <DataTable
                 columns={columns}
-                data={categoryList}
-                noData={categoryList.length === 0}
+                data={userList}
+                noData={userList.length === 0}
                 skeletonAvatarColumns={[0]}
                 skeletonAvatarProps={{ width: 28, height: 28 }}
                 loading={initialLoading}
                 pagingData={{
-                    total: categoryListTotal,
+                    total: userListTotal,
                     pageIndex,
                     pageSize,
                 }}
                 onPaginationChange={handlePaginationChange}
                 onSelectChange={handleSelectChange}
+                onSort={handleSort}
             />
             <ConfirmDialog
                 isOpen={deleteConfirmationOpen}
                 type="danger"
-                title="Remove articles"
+                title="Hapus User"
                 onClose={handleCancel}
                 onRequestClose={handleCancel}
                 onCancel={handleCancel}
@@ -175,12 +264,11 @@ const CategoryListTable = ({
             >
                 <p>
                     {' '}
-                    Are you sure you want to remove these articles? This action
-                    can&apos;t be undo.{' '}
+                    Anda yakin ingin menghapus user ini? aksi ini tidak dapat dikembalikan.{' '}
                 </p>
             </ConfirmDialog>
         </>
     )
 }
 
-export default CategoryListTable
+export default UserListTable

@@ -156,7 +156,7 @@ const supabase = createClient()
                 cell: ({row}) => {
                     // const row = props.row.original
                     return (
-                        <span className="font-semibold">
+                        <span>
                             {row.index + 1}
                         </span>
                     )
@@ -178,16 +178,16 @@ const supabase = createClient()
                 accessorKey: 'name',
                 cell: (props) => {
                     const row = props.row.original
-                    return <span className="font-semibold">{row.name}</span>
+                    return <span>{row.name}</span>
                 },
             },
             {
-                header: 'Kategori',
+                header: 'Jenis Halte',
                 size: 150,
                 accessorKey: 'kategori',
                 cell: (props) => {
                     const row = props.row.original
-                    return <span className="font-semibold">{row.categories.name}</span>
+                    return <span>{row.categories.name}</span>
                 },
             },
             {
@@ -195,7 +195,7 @@ const supabase = createClient()
                 accessorKey: 'lat',
                 cell: (props) => {
                     const row = props.row.original
-                    return <span className="font-semibold">{row.latitude}</span>
+                    return <span>{row.latitude}</span>
                 },
             },
             {
@@ -203,7 +203,7 @@ const supabase = createClient()
                 accessorKey: 'lng',
                 cell: (props) => {
                     const row = props.row.original
-                    return <span className="font-semibold">{row.longitude}</span>
+                    return <span>{row.longitude}</span>
                 },
             },
             

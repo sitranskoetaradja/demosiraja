@@ -5,10 +5,9 @@ import Dropdown from '@/components/ui/Dropdown'
 import withHeaderItem from '@/utils/hoc/withHeaderItem'
 import Link from 'next/link'
 import signOut from '@/server/actions/auth/handleSignOut'
-import useCurrentSession from '@/utils/hooks/useCurrentSession'
 import { PiUserDuotone, PiSignOutDuotone } from 'react-icons/pi'
-
-import type { JSX } from 'react'
+import { useCallback, useEffect, useState, type JSX } from 'react'
+import { createClient } from '@/utils/supabase/client'
 
 type DropdownList = {
     label: string
@@ -17,19 +16,56 @@ type DropdownList = {
 }
 
 const dropdownItemList: DropdownList[] = []
+type User = {
+    nip: string
+    name: string
+    position: string
+    rank: string
+    role: string
+    email: string
+    phone: string
+    password: string
+    avatar: string | null
+}
 
 const _UserDropdown = () => {
-    const { session } = useCurrentSession()
+    const supabase = createClient()
+    const [userData, setUserData] = useState<User | null>(null)
 
     const handleSignOut = async () => {
         await signOut()
     }
 
     const avatarProps = {
-        ...(session?.user?.image
-            ? { src: session?.user?.image }
+        ...(userData?.avatar
+            ? { src: userData?.avatar }
             : { icon: <PiUserDuotone /> }),
     }
+
+    const getProfile = useCallback(async () => {
+        try {
+            const { data: { user } } = await supabase.auth.getUser();
+            const { data, error, status } = await supabase
+                .from('profiles')
+                .select('*')
+                .eq('id', user?.id)
+                .single()
+            if (error && status !== 406) {
+                console.log(error)
+                throw error
+            }
+            if (data) {
+                setUserData(data)
+                console.log('data user', data)
+            }
+        } catch (error) {
+            console.log('Error loading user data!')
+        } finally {
+        }
+    }, [supabase])
+    useEffect(() => {
+        getProfile()
+    }, [getProfile])
 
     return (
         <Dropdown
@@ -47,10 +83,10 @@ const _UserDropdown = () => {
                     <Avatar {...avatarProps} />
                     <div>
                         <div className="font-bold text-gray-900 dark:text-gray-100">
-                            {session?.user?.name || 'Anonymous'}
+                            {userData?.name || 'Anonymous'}
                         </div>
                         <div className="text-xs">
-                            {session?.user?.email || 'No email available'}
+                            {userData?.email || 'No email available'}
                         </div>
                     </div>
                 </div>

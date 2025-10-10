@@ -8,9 +8,21 @@ import {
 	BreadcrumbPage,
 	BreadcrumbSeparator,
 } from "@/components/ui/Breadcrumb/breadcrumb"
+import getUserList from '@/server/actions/getUserList'
+import UserListProvider from './_components/UserListProvider'
+import type { PageProps } from '@/@types/common'
+import UserListTable from './_components/UserListTable'
+import UserListActionTools from './_components/UserListActionTools'
+import UserListTableTools from './_components/UserListTableTools'
+import { createClient } from '@/utils/supabase/client'
 
-const Page = () => {
+const Page = async ({ searchParams }: PageProps) => {
+	const params = await searchParams
+    const data = await getUserList(params)
+	
 	return (
+		<UserListProvider userList={data.list}>
+			
 		<Container>
 
 			<div className="mb-6">
@@ -42,15 +54,24 @@ const Page = () => {
 			</div>
 			<div className="mt-6">
 				<AdaptiveCard>
-					<div className="flex flex-col gap-4">
-						<div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
-							<h3>Setting</h3>
-							{/* <CustomerListActionTools /> */}
-						</div>
-					</div>
-				</AdaptiveCard>
+                    <div className="flex flex-col gap-4">
+                        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
+                            <h4>Total User: {data.list.length}</h4>
+                            <UserListActionTools />
+                        </div>
+                        <UserListTableTools />
+                        <UserListTable
+                            userListTotal={data.total}
+                            pageIndex={
+                                parseInt(params.pageIndex as string) || 1
+                            }
+                            pageSize={parseInt(params.pageSize as string) || 10}
+                        />
+                    </div>
+                </AdaptiveCard>
 			</div>
 		</Container>
+		</UserListProvider>
 
 	)
 }

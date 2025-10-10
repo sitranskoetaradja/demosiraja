@@ -70,7 +70,7 @@ const BusCreate = () => {
 					machine_number: values.machineNumber,
 					stnk_period: values.stnkPeriod ? dayjs.unix(values.stnkPeriod).toDate() : null,
 					tax_period: values.taxPeriod ? dayjs.unix(values.taxPeriod).toDate() : null,
-					photo: res.publicUrl,
+					photo: values.photo ? res.publicUrl : '',
 					created_by: user.id,
 				})
 			setIsSubmiting(false)
