@@ -4,6 +4,7 @@ export type User = {
     name: string
     position: string
     rank: string
+    role: string
     phone: string
     email: string
 }

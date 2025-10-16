@@ -1,20 +1,17 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import ConfirmDialog from '@/components/shared/ConfirmDialog'
+import type { ColumnDef, OnSortParam } from '@/components/shared/DataTable'
+import DataTable from '@/components/shared/DataTable'
 import Tag from '@/components/ui/Tag'
 import Tooltip from '@/components/ui/Tooltip'
-import DataTable from '@/components/shared/DataTable'
-import ConfirmDialog from '@/components/shared/ConfirmDialog'
-import { useFacilityListStore } from '../_store/facilityListStore'
 import useAppendQueryParams from '@/utils/hooks/useAppendQueryParams'
-import sleep from '@/utils/sleep'
-import { useRouter } from 'next/navigation'
-import { TbTrash, TbEye } from 'react-icons/tb'
-import dayjs from 'dayjs'
-import { NumericFormat } from 'react-number-format'
-import type { OnSortParam, ColumnDef } from '@/components/shared/DataTable'
-import type { Facility } from '../types'
 import { createClient } from '@/utils/supabase/client'
+import { useRouter } from 'next/navigation'
+import { useMemo, useState } from 'react'
+import { TbEye, TbPencil, TbTrash } from 'react-icons/tb'
+import { useFacilityListStore } from '../_store/facilityListStore'
+import type { Facility } from '../types'
 
 type FacilityListTableProps = {
     facilityListTotal: number
@@ -37,10 +34,10 @@ const FacilityStatusColor: Record<
     },
     'RUSAK': {
         label: 'Rusak',
-        bgClass: 'bg-warning-subtle',
-        textClass: 'text-warning',
+        bgClass: 'bg-error-subtle',
+        textClass: 'text-error',
     },
-    'TIDAK_ADA': { label: 'Tidak Ada', bgClass: 'bg-error-subtle', textClass: 'text-error' },
+    'TIDAK_ADA': { label: 'Tidak Ada', bgClass: 'bg-warning-subtle', textClass: 'text-warning' },
 }
 
 const OrderColumn = ({ row }: { row: Facility }) => {
@@ -62,9 +59,11 @@ const OrderColumn = ({ row }: { row: Facility }) => {
 
 const ActionColumn = ({
     row,
+    onEdit,
     onDelete,
 }: {
     row: Facility
+    onEdit: () => void
     onDelete: () => void
 }) => {
     const router = useRouter()
@@ -75,6 +74,11 @@ const ActionColumn = ({
 
     return (
         <div className="flex justify-center text-lg gap-1">
+            <Tooltip wrapperClass="flex" title="Edit">
+                <span className={`cursor-pointer p-2 hover:text-green-500`} onClick={onEdit} >
+                    <TbPencil />
+                </span>
+            </Tooltip>
             <Tooltip wrapperClass="flex" title="View">
                 <span className={`cursor-pointer p-2`} onClick={onView}>
                     <TbEye />
@@ -138,7 +142,7 @@ const FacilityListTable = ({
     const facilityList = useFacilityListStore((state) => state.facilityList)
     const setFacilityList = useFacilityListStore((state) => state.setFacilityList)
     const initialLoading = useFacilityListStore((state) => state.initialLoading)
-const supabase = createClient()
+    const supabase = createClient()
     const { onAppendQueryParams } = useAppendQueryParams()
 
     const [deleting, setDeleting] = useState(false)
@@ -146,26 +150,28 @@ const supabase = createClient()
     const [deleteConfirmationOpen, setDeleteConfirmationOpen] = useState(false)
 
     const [orderToDelete, setOrderToDelete] = useState('')
-
+    const handleEdit = (user: Facility) => {
+        // router.push(`/concepts/customers/customer-edit/${user.id}`)
+    }
     const columns: ColumnDef<Facility>[] = useMemo(
         () => [
             {
                 header: 'No',
-                size:50,
+                size: 50,
                 accessorKey: '',
-                cell: ({row}) => {
+                cell: ({ row }) => {
                     // const row = props.row.original
                     return (
                         <span className="font-semibold">
-                            {row.index + 1}
+                            {(row.index + 1) + ((pageIndex - 1) * pageSize)}
                         </span>
                     )
                 },
             },
-            
+
             {
                 header: 'Kode',
-                size: 100,
+                // size: 100,
                 accessorKey: 'code',
                 cell: (props) => {
                     const row = props.row.original
@@ -178,7 +184,7 @@ const supabase = createClient()
                 accessorKey: 'name',
                 cell: (props) => {
                     const row = props.row.original
-                    return <span className="font-semibold">{row.name}</span>
+                    return <span>{row.name}</span>
                 },
             },
             {
@@ -186,54 +192,44 @@ const supabase = createClient()
                 accessorKey: 'buses',
                 cell: (props) => {
                     const row = props.row.original
-                    return <span className="font-semibold">{row.buses?.code ? row.buses?.code : row.bus_stops?.name}</span>
+                    return <span>{row.buses?.code ? row.buses?.code : row.bus_stops?.name}</span>
                 },
             },
+            // {
+            //     header: 'Kategori',
+            //     accessorKey: 'categories',
+            //     cell: (props) => {
+            //         const row = props.row.original
+            //         return <span>{row.categories.name}</span>
+            //     },
+            // },
             {
-                header: 'Kategori',
-                accessorKey: 'categories',
-                cell: (props) => {
-                    const row = props.row.original
-                    return <span className="font-semibold">{row.categories.name}</span>
-                },
-            },
-			{
                 header: 'Status',
                 accessorKey: 'status',
                 cell: (props) => {
                     const row = props.row.original
                     return (<Tag className={FacilityStatusColor[row.status].bgClass}>
-                            <span
-                                className={`capitalize font-semibold ${FacilityStatusColor[row.status].textClass}`}
-                            >
-                                {FacilityStatusColor[row.status].label}
-                            </span>
-                        </Tag>)
+                        <span
+                            className={`capitalize font-semibold ${FacilityStatusColor[row.status].textClass}`}
+                        >
+                            {FacilityStatusColor[row.status].label}
+                        </span>
+                    </Tag>)
                 },
             },
-			{
-                header: 'Note',
-                accessorKey: 'note',
-                cell: (props) => {
-                    const row = props.row.original
-                    return <span className="font-semibold">{row.note}</span>
-                },
-            },
-            
-           
-            
             {
                 header: '',
                 id: 'action',
                 cell: (props) => (
                     <ActionColumn
                         row={props.row.original}
+                        onEdit={() => handleEdit(props.row.original)}
                         onDelete={() => handleDelete(props.row.original.id)}
                     />
                 ),
             },
         ],
-        [],
+        [pageIndex, pageSize],
     )
 
     const handleDelete = (id: string) => {
@@ -270,11 +266,11 @@ const supabase = createClient()
         setDeleting(true)
         // await sleep(800)
         const response = await supabase
-        .from('facilities')
-        .delete()
-        .eq('id', orderToDelete)
+            .from('facilities')
+            .delete()
+            .eq('id', orderToDelete)
         console.log('response', response)
-  
+
         // const newOrderList = orderList.filter(
         //     (order) => order.id !== orderToDelete,
         // )

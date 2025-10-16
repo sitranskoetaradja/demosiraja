@@ -44,9 +44,7 @@ const Page = async ({ searchParams }: PageProps) => {
 				<div>
 					<h3 className="mb-1">Bus</h3>
 					<p>
-						Create an image with Generative AI by describing what
-						you&apos;d like to see. Please note, all images are shared
-						publicly by default.
+						Data seluruh bus yang ada di UPTD Trans Koetaradja.
 					</p>
 				</div>
 			</div>
@@ -54,7 +52,7 @@ const Page = async ({ searchParams }: PageProps) => {
 				<AdaptiveCard>
                     <div className="flex flex-col gap-4">
                         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
-                            <h4>Total Bus: {data.list.length}</h4>
+                            <h4>Total Bus: {data.total}</h4>
                             <BusListActionTools />
                         </div>
                         <BusListTableTools />

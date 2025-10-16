@@ -54,7 +54,7 @@ const Page = async ({ searchParams }: PageProps) => {
 					<AdaptiveCard>
                     <div className="flex flex-col gap-4">
                         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
-                            <h4>Jumlah Seluruh Halte: {data.list.length}</h4>
+                            <h4>Jumlah Seluruh Halte: {data.total}</h4>
                             <HalteListActionTools />
                         </div>
                         <HalteListTableTools />

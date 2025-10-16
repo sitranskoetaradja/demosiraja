@@ -1,20 +1,17 @@
 'use client'
 
-import { useMemo, useState } from 'react'
-import Tag from '@/components/ui/Tag'
-import Tooltip from '@/components/ui/Tooltip'
-import DataTable from '@/components/shared/DataTable'
 import ConfirmDialog from '@/components/shared/ConfirmDialog'
-import { useBusListStore } from '../_store/busListStore'
+import type { ColumnDef, OnSortParam } from '@/components/shared/DataTable'
+import DataTable from '@/components/shared/DataTable'
+import Tooltip from '@/components/ui/Tooltip'
 import useAppendQueryParams from '@/utils/hooks/useAppendQueryParams'
-import sleep from '@/utils/sleep'
-import { useRouter } from 'next/navigation'
-import { TbTrash, TbEye } from 'react-icons/tb'
-import dayjs from 'dayjs'
-import { NumericFormat } from 'react-number-format'
-import type { OnSortParam, ColumnDef } from '@/components/shared/DataTable'
-import type { Bus } from '../types'
 import { createClient } from '@/utils/supabase/client'
+import dayjs from 'dayjs'
+import { useRouter } from 'next/navigation'
+import { useMemo, useState } from 'react'
+import { TbEye, TbPencil, TbTrash } from 'react-icons/tb'
+import { useBusListStore } from '../_store/busListStore'
+import type { Bus } from '../types'
 
 type BusListTableProps = {
     busListTotal: number
@@ -62,9 +59,11 @@ const OrderColumn = ({ row }: { row: Bus }) => {
 
 const ActionColumn = ({
     row,
+    onEdit,
     onDelete,
 }: {
     row: Bus
+    onEdit: () => void
     onDelete: () => void
 }) => {
     const router = useRouter()
@@ -75,6 +74,11 @@ const ActionColumn = ({
 
     return (
         <div className="flex justify-center text-lg gap-1">
+            <Tooltip wrapperClass="flex" title="Edit">
+                <span className={`cursor-pointer p-2 hover:text-green-500`} onClick={onEdit} >
+                    <TbPencil />
+                </span>
+            </Tooltip>
             <Tooltip wrapperClass="flex" title="View">
                 <span className={`cursor-pointer p-2`} onClick={onView}>
                     <TbEye />
@@ -138,7 +142,7 @@ const BusListTable = ({
     const busList = useBusListStore((state) => state.busList)
     const setBusList = useBusListStore((state) => state.setBusList)
     const initialLoading = useBusListStore((state) => state.initialLoading)
-const supabase = createClient()
+    const supabase = createClient()
     const { onAppendQueryParams } = useAppendQueryParams()
 
     const [deleting, setDeleting] = useState(false)
@@ -146,23 +150,25 @@ const supabase = createClient()
     const [deleteConfirmationOpen, setDeleteConfirmationOpen] = useState(false)
 
     const [orderToDelete, setOrderToDelete] = useState('')
-
+    const handleEdit = (user: Bus) => {
+            // router.push(`/concepts/customers/customer-edit/${user.id}`)
+        }
     const columns: ColumnDef<Bus>[] = useMemo(
         () => [
             {
                 header: 'No',
-                size:50,
+                size: 50,
                 accessorKey: '',
-                cell: ({row}) => {
+                cell: ({ row }) => {
                     // const row = props.row.original
                     return (
-                        <span className="font-semibold">
-                            {row.index + 1}
+                        <span>
+                            {(row.index + 1) + ((pageIndex - 1) * pageSize)}
                         </span>
                     )
                 },
             },
-            
+
             {
                 header: 'Kode',
                 size: 100,
@@ -178,7 +184,7 @@ const supabase = createClient()
                 accessorKey: 'plateNumber',
                 cell: (props) => {
                     const row = props.row.original
-                    return <span className="font-semibold">{row.plate_number}</span>
+                    return <span>{row.plate_number}</span>
                 },
             },
             {
@@ -186,7 +192,7 @@ const supabase = createClient()
                 accessorKey: 'brand',
                 cell: (props) => {
                     const row = props.row.original
-                    return <span className="font-semibold">{row.brand}</span>
+                    return <span>{row.brand}</span>
                 },
             },
             {
@@ -194,17 +200,17 @@ const supabase = createClient()
                 accessorKey: 'productionYear',
                 cell: (props) => {
                     const row = props.row.original
-                    return <span className="font-semibold">{row.production_year}</span>
+                    return <span>{row.production_year}</span>
                 },
             },
-            
+
             {
                 header: 'STNK',
                 accessorKey: 'stnkPeriod',
                 cell: (props) => {
                     const row = props.row.original
                     return (
-                        <span className="font-semibold">
+                        <span>
                             {row.stnk_period ? dayjs(row.stnk_period).format('DD MMM YYYY') : '-'}
                         </span>
                     )
@@ -216,26 +222,27 @@ const supabase = createClient()
                 cell: (props) => {
                     const row = props.row.original
                     return (
-                        <span className="font-semibold">
+                        <span>
                             {row.tax_period ? dayjs(row.tax_period).format('DD MMM YYYY') : '-'}
                         </span>
                     )
                 },
             },
-            
-            
+
+
             {
                 header: '',
                 id: 'action',
                 cell: (props) => (
                     <ActionColumn
                         row={props.row.original}
+                        onEdit={() => handleEdit(props.row.original)}
                         onDelete={() => handleDelete(props.row.original.id)}
                     />
                 ),
             },
         ],
-        [],
+        [pageIndex, pageSize],
     )
 
     const handleDelete = (id: string) => {
@@ -272,11 +279,11 @@ const supabase = createClient()
         setDeleting(true)
         // await sleep(800)
         const response = await supabase
-        .from('categories')
-        .delete()
-        .eq('id', orderToDelete)
+            .from('categories')
+            .delete()
+            .eq('id', orderToDelete)
         console.log('response', response)
-  
+
         // const newOrderList = orderList.filter(
         //     (order) => order.id !== orderToDelete,
         // )

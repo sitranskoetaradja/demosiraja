@@ -44,9 +44,7 @@ const Page = async ({ searchParams }: PageProps) => {
 				<div>
 					<h3 className="mb-1">Kategori</h3>
 					<p>
-						Create an image with Generative AI by describing what
-						you&apos;d like to see. Please note, all images are shared
-						publicly by default.
+						Data kategori untuk fasilitas, bus, dan juga halte.
 					</p>
 				</div>
 			</div>

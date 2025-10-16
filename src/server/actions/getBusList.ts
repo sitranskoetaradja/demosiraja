@@ -25,7 +25,7 @@ const getBusList = async (_queryParams: {
                 .from('buses')
                 .select('*, categories (name)')
     // console.log('supabase', supabase);
-    console.log('data', { data, error, status });
+    // console.log('data', { data, error, status });
     let datas = structuredClone(data ?? [])
     const total = data ? data.length : 0;
 

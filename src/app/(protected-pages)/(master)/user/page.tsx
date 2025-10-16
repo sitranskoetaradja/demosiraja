@@ -46,9 +46,7 @@ const Page = async ({ searchParams }: PageProps) => {
 				<div>
 					<h3 className="mb-1">User</h3>
 					<p>
-						Create an image with Generative AI by describing what
-						you&apos;d like to see. Please note, all images are shared
-						publicly by default.
+						Data user aplikasi siraja.
 					</p>
 				</div>
 			</div>
@@ -56,7 +54,7 @@ const Page = async ({ searchParams }: PageProps) => {
 				<AdaptiveCard>
                     <div className="flex flex-col gap-4">
                         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
-                            <h4>Total User: {data.list.length}</h4>
+                            <h4>Total User: {data.total}</h4>
                             <UserListActionTools />
                         </div>
                         <UserListTableTools />

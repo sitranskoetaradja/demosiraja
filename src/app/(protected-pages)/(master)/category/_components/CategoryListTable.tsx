@@ -9,7 +9,7 @@ import { createClient } from '@/utils/supabase/client'
 import dayjs from 'dayjs'
 import { useRouter } from 'next/navigation'
 import { useMemo, useState } from 'react'
-import { TbEye, TbTrash } from 'react-icons/tb'
+import { TbEye, TbPencil, TbTrash } from 'react-icons/tb'
 import { useCategoryListStore } from '../_store/categoryListStore'
 import type { Category } from '../types'
 
@@ -21,9 +21,11 @@ type CategoryListTableProps = {
 
 const ActionColumn = ({
     row,
+    onEdit,
     onDelete,
 }: {
     row: Category
+    onEdit: () => void
     onDelete: () => void
 }) => {
     const router = useRouter()
@@ -34,6 +36,11 @@ const ActionColumn = ({
 
     return (
         <div className="flex justify-center text-lg gap-1">
+            <Tooltip wrapperClass="flex" title="Edit">
+                <span className={`cursor-pointer p-2 hover:text-green-500`} onClick={onEdit} >
+                    <TbPencil />
+                </span>
+            </Tooltip>
             <Tooltip wrapperClass="flex" title="View">
                 <span className={`cursor-pointer p-2`} onClick={onView}>
                     <TbEye />
@@ -64,7 +71,9 @@ const CategoryListTable = ({
     const [deleting, setDeleting] = useState(false)
     const [deleteConfirmationOpen, setDeleteConfirmationOpen] = useState(false)
     const [orderToDelete, setOrderToDelete] = useState('')
-
+    const handleEdit = (category: Category) => {
+        // router.push(`/concepts/customers/customer-edit/${user.id}`)
+    }
     const columns: ColumnDef<Category>[] = useMemo(
         () => [
             {
@@ -72,8 +81,8 @@ const CategoryListTable = ({
                 accessorKey: '',
                 cell: ({ row }) => {
                     return (
-                        <span className="font-semibold">
-                            {row.index + 1}
+                        <span>
+                            {(row.index + 1) + ((pageIndex - 1) * pageSize)}
                         </span>
                     )
                 },
@@ -84,7 +93,7 @@ const CategoryListTable = ({
                 accessorKey: 'name',
                 cell: (props) => {
                     const row = props.row.original
-                    return <span className="font-semibold">{row.name}</span>
+                    return <span>{row.name}</span>
                 },
             },
             {
@@ -93,7 +102,7 @@ const CategoryListTable = ({
                 cell: (props) => {
                     const row = props.row.original
                     return (
-                        <span className="font-semibold">
+                        <span>
                             {row.created_at ? dayjs(row.created_at).format('DD MMM, YYYY') : '-'}
                         </span>
                     )
@@ -105,12 +114,13 @@ const CategoryListTable = ({
                 cell: (props) => (
                     <ActionColumn
                         row={props.row.original}
+                        onEdit={() => handleEdit(props.row.original)}
                         onDelete={() => handleDelete(props.row.original.id)}
                     />
                 ),
             },
         ],
-        [],
+        [pageIndex, pageSize],
     )
 
     const handleDelete = (id: string) => {

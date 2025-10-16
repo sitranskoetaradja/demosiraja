@@ -3,6 +3,7 @@
 import ConfirmDialog from '@/components/shared/ConfirmDialog'
 import type { ColumnDef, OnSortParam } from '@/components/shared/DataTable'
 import DataTable from '@/components/shared/DataTable'
+import Tag from '@/components/ui/Tag'
 import Tooltip from '@/components/ui/Tooltip'
 import { deleteUser } from '@/server/actions/removeUser'
 import useAppendQueryParams from '@/utils/hooks/useAppendQueryParams'
@@ -19,25 +20,25 @@ type UserListTableProps = {
     pageSize?: number
 }
 
-const userStatusColor: Record<
-    number,
+const RoleColor: Record<
+    string,
     {
         label: string
         bgClass: string
         textClass: string
     }
 > = {
-    0: {
-        label: 'Paid',
+    'admin': {
+        label: 'Admin',
         bgClass: 'bg-success-subtle',
         textClass: 'text-success',
     },
-    1: {
-        label: 'Pending',
-        bgClass: 'bg-warning-subtle',
-        textClass: 'text-warning',
+    'user': {
+        label: 'User',
+        bgClass: 'bg-primary-subtle',
+        textClass: 'text-primary',
     },
-    2: { label: 'Failed', bgClass: 'bg-error-subtle', textClass: 'text-error' },
+    'TIDAK_ADA': { label: 'Tidak Ada', bgClass: 'bg-error-subtle', textClass: 'text-error' },
 }
 
 const OrderColumn = ({ row }: { row: User }) => {
@@ -115,7 +116,7 @@ const UserListTable = ({
 
     const [orderToDelete, setOrderToDelete] = useState('')
     const handleEdit = (user: User) => {
-        router.push(`/concepts/customers/customer-edit/${user.id}`)
+        // router.push(`/concepts/customers/customer-edit/${user.id}`)
     }
     const columns: ColumnDef<User>[] = useMemo(
         () => [
@@ -125,8 +126,8 @@ const UserListTable = ({
                 cell: ({ row }) => {
                     // const row = props.row.original
                     return (
-                        <span className="font-semibold">
-                            {row.index + 1}
+                        <span>
+                            {(row.index + 1) + ((pageIndex-1)*pageSize)}
                         </span>
                     )
                 },
@@ -137,7 +138,7 @@ const UserListTable = ({
                 accessorKey: 'name',
                 cell: (props) => {
                     const row = props.row.original
-                    return <span className="font-semibold">{row.name}</span>
+                    return <span>{row.name}</span>
                 },
             },
             {
@@ -145,23 +146,21 @@ const UserListTable = ({
                 accessorKey: 'nip',
                 cell: (props) => {
                     const row = props.row.original
-                    return <span className="font-semibold">{row.nip}</span>
+                    return <span>{row.nip}</span>
                 },
             },
             {
-                header: 'Jabatan',
-                accessorKey: 'position',
+                header: 'Role',
+                accessorKey: 'role',
                 cell: (props) => {
                     const row = props.row.original
-                    return <span className="font-semibold">{row.position ?? '-'}</span>
-                },
-            },
-            {
-                header: 'Pangkat',
-                accessorKey: 'Rank',
-                cell: (props) => {
-                    const row = props.row.original
-                    return <span className="font-semibold">{row.rank ?? '-'}</span>
+                    return (<Tag className={RoleColor[row.role].bgClass}>
+                            <span
+                                className={`capitalize font-semibold ${RoleColor[row.role].textClass}`}
+                            >
+                                {RoleColor[row.role].label}
+                            </span>
+                        </Tag>)
                 },
             },
             {
@@ -169,7 +168,7 @@ const UserListTable = ({
                 accessorKey: 'Email',
                 cell: (props) => {
                     const row = props.row.original
-                    return <span className="font-semibold">{row.email ?? '-'}</span>
+                    return <span>{row.email ?? '-'}</span>
                 },
             },
             {
@@ -177,7 +176,7 @@ const UserListTable = ({
                 accessorKey: 'Phone',
                 cell: (props) => {
                     const row = props.row.original
-                    return <span className="font-semibold">{row.phone ?? '-'}</span>
+                    return <span>{row.phone ?? '-'}</span>
                 },
             },
 
@@ -193,7 +192,7 @@ const UserListTable = ({
                 ),
             },
         ],
-        [],
+        [pageIndex, pageSize],
     )
 
     const handleDelete = (id: string) => {

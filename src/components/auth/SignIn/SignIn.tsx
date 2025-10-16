@@ -33,14 +33,15 @@ const SignIn = ({
                 <Logo
                     type="streamline"
                     mode={mode}
-                    logoWidth={60}
-                    logoHeight={60}
+                    logoWidth={100}
+                    logoHeight={100}
                 />
             </div>
             <div className="mb-10">
-                <h2 className="mb-2">Welcome back!</h2>
+                <h2 className="text-blue-900">SIRAJA</h2>
+                <h4 className="mb-2 text-yellow-300">Sistem Inventaris Trans Koetaradja</h4>
                 <p className="font-semibold heading-text">
-                    Please enter your credentials to sign in!
+                    Masukkan Email dan Password untuk masuk!
                 </p>
             </div>
             {message && (

@@ -18,6 +18,23 @@ export const protectedRoutes: Routes = {
             pageContainerType: 'contained',
         },
     },
+    '/facility/create': {
+        key: 'inventory.facility',
+        authority: [],
+        meta: {
+            pageBackgroundType: 'plain',
+            // pageContainerType: 'contained',
+			
+            header: {
+                title: 'Tambah Fasilitas',
+                description:
+                    'Manage customer details, track purchases, and update preferences easily.',
+                contained: true,
+            },
+            footer: false,
+        
+        },
+    },
     '/bus': {
         key: 'inventory.bus',
         authority: [],

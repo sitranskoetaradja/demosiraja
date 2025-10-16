@@ -17,12 +17,12 @@ const HalteListActionTools = () => {
 
     return (
         <div className="flex flex-col md:flex-row gap-3">
-            <Button
+            {/* <Button
                     icon={<TbCloudDownload className="text-xl" />}
                     className="w-full"
                 >
                     Download
-                </Button>
+                </Button> */}
             <Button
                 variant="solid"
                 icon={<TbPlus className="text-xl" />}
